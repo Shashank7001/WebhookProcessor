@@ -92,21 +92,8 @@ GET /health/live
 GET /health/ready
 
 Project Structure
-.
-├── app/
-│   ├── main.py          # FastAPI app & endpoints
-│   ├── models.py        # SQLAlchemy & Pydantic models
-│   ├── database.py      # DB init & session management
-│   ├── config.py        # Settings & env loader
-│   ├── metrics.py       # Metrics recording
-│   ├── logging_utils.py # JSON logging + middleware
-│   ├── utils.py         # HMAC & helper functions
-│   └── ...
-├── requirements.txt     # Python dependencies
-├── docker-compose.yml   # Docker Compose setup
-├── Dockerfile           # Containerize the app
-├── Makefile             # Build/run commands (`make up`)
-└── README.md
+<img width="312" height="519" alt="Project Structure" src="https://github.com/user-attachments/assets/e388766a-b69d-43ae-a19e-11cab2f7f06e" />
+
 
 Makefile Commands
 Command	Description
