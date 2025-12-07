@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+gunicorn 
+sqlalchemy 
+pydantic-settings 
+pydantic
+prometheus-client  
+python-dotenv 
