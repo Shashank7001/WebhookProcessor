@@ -1,16 +1,117 @@
-🚀 Project Name: WebhookProcessorWebhookProcessor is a secure, high-performance microservice designed to act as the single, reliable drop-off point for critical incoming message data delivered via webhooks. It handles fast ingestion, strict data validation, and persistent storage, ensuring zero downtime and complete message accountability.✨ Key FeaturesAsynchronous Performance: Built on FastAPI and utilizes multiple Gunicorn workers, enabling extremely fast, non-blocking ingestion and high concurrency necessary for handling bursts of webhook traffic.Secure Ingestion (HMAC): Enforces message authenticity by performing a cryptographic HMAC signature check on every incoming webhook against the X-Signature header, rejecting unauthorized or tampered payloads immediately.Data Integrity & Validation: Uses Pydantic models to rigorously validate and type-check every incoming JSON payload, ensuring only clean, structured data is passed to the database layer.Persistent Storage: Stores all message records in a SQLAlchemy/SQLite database, automatically creating the schema on startup for ease of development and deployment.Advanced Query API: Provides a flexible, RESTful /messages endpoint supporting chained filters for highly specific data retrieval:Time Filter: (since=)Text Search: (q=)Sender/Recipient: (from=, to=)Monitoring & Health Checks: Integrates Prometheus metrics via the /metrics endpoint and includes dedicated /health/ready and /health/live probes for seamless orchestration by platforms like Docker and Kubernetes.💻 Tech Stack & RequirementsCategoryTechnologyPurposeFrameworkFastAPIHigh-performance, async API development.ServerGunicorn & UvicornProduction-grade multi-process server management.DatabaseSQLAlchemy (ORM) & SQLiteORM for message storage.ValidationPydanticData validation and configuration management.Monitoringprometheus-clientExposes application metrics for external scraping.Environmentpython-dotenvLoads local configuration variables from a .env file.⚙️ Getting Started (Local Setup)PrerequisitesPython 3.11+Docker (Recommended for development and deployment)1. Clone the RepositoryBashgit clone https://github.com/YourUsername/WebhookProcessor.git
-cd WebhookProcessor
-2. Set Up Environment VariablesCreate a file named .env in the project root to store configuration variables (secrets)..env# Database configuration for local SQLite file
-DATABASE_URL="sqlite:///./data/app.db"
+# 🚀 Lyftr: FastAPI Messaging Webhook & Analytics Service
 
-# Secret key used to verify incoming webhook signatures
-# **IMPORTANT**: Use a strong, random string in production.
-WEBHOOK_SECRET="your_strong_secret_key_here"
+A **production-ready backend service** to ingest message webhooks, query messages with filters, and expose advanced analytics/statistics. Built with **FastAPI** and **SQLAlchemy**.
 
-# Logging Level (DEBUG, INFO, WARNING, ERROR)
-LOG_LEVEL="DEBUG" 
-3. Build and Run with Docker (Recommended)This method uses a volume mount to ensure your database file (app.db) persists on your host machine and is not lost when the container stops.Build the Image:Bashdocker build -t webhook-processor:latest .
-Create Data Directory: (Needed if the directory doesn't already exist)Bashmkdir -p data
-Run the Container (with Volume Mount):Bashdocker run -d --name webhook-processor -p 8000:8000 -v "$(pwd)/data:/data" webhook-processor:latest
-The application is now running in the background and accessible on http://localhost:8000.📚 API EndpointsEndpointMethodDescription/webhookPOSTPrimary entry point for ingesting new messages. Requires HMAC signature./messagesGETRetrieves paginated and filtered list of stored messages./health/readyGETReadiness probe: checks if the service and database connection are functional./metricsGETExposes Prometheus metrics for application monitoring.Example QueryTo fetch messages sent by a specific number after a certain time:GET /messages?from=+14155550100&since=2025-11-20T10:00:00Z&limit=20
-🔒 Security (HMAC Signature)The /webhook endpoint relies on the sender to compute a HMAC-SHA256 signature and include it in the X-Signature header. The WebhookProcessor verifies this signature against its internal WEBHOOK_SECRET before processing the payload. This mechanism protects against spoofing and data tampering.
+---
+
+## ✨ Features
+
+- 🔒 **Secure webhook endpoint** with HMAC signature validation  
+- ✅ **Idempotent inserts** to prevent duplicate message IDs  
+- 📄 **Powerful message query API**: pagination, text search, sender/receiver/time filters  
+- 📊 **Analytics & statistics endpoint**: total messages, top senders, time ranges  
+- 📈 **Prometheus-compatible metrics** for monitoring  
+- 📝 **Structured JSON logging**  
+- 🗄️ **SQLite by default**, configurable for other databases  
+
+---
+
+## ⚡ Quickstart
+
+### 1. Clone the repository
+
+2. Configure Environment
+
+Create a .env file in the project root:
+
+DATABASE_URL=sqlite:///./data/app.db      # SQLAlchemy DB URI
+WEBHOOK_SECRET=your_webhook_secret_key   # HMAC secret key
+LOG_LEVEL=INFO                            # Optional: DEBUG, INFO, WARN
+
+3. Build & Run with Docker
+
+Make sure Docker Desktop is running. Then run:
+
+make up
+
+
+This will build and start the service in a container
+
+App will be available at: http://127.0.0.1:8000
+
+Endpoints
+1. Webhook Ingest
+
+POST /webhook
+
+Headers:
+X-Signature: <hmac-sha256>
+
+Body (JSON):
+
+{
+  "message_id": "string",
+  "from": "+1234567890",
+  "to": "+1987654321",
+  "ts": "YYYY-MM-DDTHH:MM:SSZ",
+  "text": "Optional message"
+}
+
+2. Message Query
+
+GET /messages
+
+Query Parameters:
+
+limit (int)
+
+offset (int)
+
+from (string, phone number)
+
+to (string, phone number)
+
+since (ISO datetime)
+
+q (string, text search)
+
+3. Stats
+
+GET /stats
+Returns: total messages, unique senders, top 10 senders, message time range.
+
+4. Metrics
+
+GET /metrics
+Prometheus-compatible metrics.
+
+5. Health Checks
+
+GET /health/live
+
+GET /health/ready
+
+Project Structure
+.
+├── app/
+│   ├── main.py          # FastAPI app & endpoints
+│   ├── models.py        # SQLAlchemy & Pydantic models
+│   ├── database.py      # DB init & session management
+│   ├── config.py        # Settings & env loader
+│   ├── metrics.py       # Metrics recording
+│   ├── logging_utils.py # JSON logging + middleware
+│   ├── utils.py         # HMAC & helper functions
+│   └── ...
+├── requirements.txt     # Python dependencies
+├── docker-compose.yml   # Docker Compose setup
+├── Dockerfile           # Containerize the app
+├── Makefile             # Build/run commands (`make up`)
+└── README.md
+
+Makefile Commands
+Command	Description
+make up	Build & start the app via Docker
+make down	Stop & remove containers
+make logs	Tail container logs
+
+Tip: Ensure Docker Desktop is running before executing make up.
